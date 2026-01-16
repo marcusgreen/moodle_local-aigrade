@@ -60,4 +60,4 @@ if ($action === 'grade') {
     die();
 }
 
-echo json_encode(['success' => false, 'error' => 'Invalid action']);
+echo json_encode(['success' => false, 'error' => get_string('error_invalid_action', 'local_aigrade')]);

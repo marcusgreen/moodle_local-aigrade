@@ -4,8 +4,6 @@ AI-powered assignment grading assistant for Moodle that uses AI to provide intel
 
 ## Features
 
-## Features
-
 - **Automated Grading**: Uses Moodle's core AI subsystem to grade student assignments
 - **Multiple Submission Types**:
   - Online text submissions
@@ -118,7 +116,6 @@ This plugin complies with GDPR and includes:
 - **Google Docs**: Only text content is extracted; images and formatting are not included
 - **Presentations (PPTX/PPT)**: Text content and slide count are evaluated, but not visual design
 
-## Support
 ## Support
 
 - **Documentation**: [Plugin page on Moodle.org](https://moodle.org/plugins/local_aigrade)

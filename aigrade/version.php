@@ -18,14 +18,14 @@
  * Version information for local_aigrade
  *
  * @package    local_aigrade
- * @copyright  2025 Brian A. Pool, National Trail Local Schools
+ * @copyright  2026 Brian A. Pool, National Trail Local Schools
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'local_aigrade';
-$plugin->version = 2025012006;  // YYYYMMDDXX format
+$plugin->version = 2026011600;  // YYYYMMDDXX format (2026-01-16, version 00)
 $plugin->requires = 2024042200;  // Moodle 4.5
 $plugin->maturity = MATURITY_BETA;
-$plugin->release = 'v1.1';
+$plugin->release = 'v1.4';

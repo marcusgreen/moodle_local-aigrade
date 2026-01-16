@@ -163,9 +163,8 @@ class grader {
             // Get submission text
             $submission_text = $this->get_submission_text($userid);
             
-          
             if (empty($submission_text)) {
-                return ['success' => false, 'error' => 'This student has not submitted any text for this assignment yet.'];
+                return ['success' => false, 'error' => get_string('error_no_submission', 'local_aigrade')];
             }
             
             // Get max grade
@@ -186,7 +185,7 @@ class grader {
                 return ['success' => true];
             }
             
-            return ['success' => false, 'error' => 'AI did not return feedback'];
+            return ['success' => false, 'error' => get_string('error_no_feedback', 'local_aigrade')];
             
         } catch (\Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
@@ -229,8 +228,11 @@ class grader {
      * @return string The extracted text
      */
     private function extract_pdf_text($file) {
-        // Save to temp file
-        $tempfile = tempnam(sys_get_temp_dir(), 'aigrade_pdf_');
+        global $CFG;
+        
+        // Use Moodle's temp directory
+        $tempdir = make_request_directory();
+        $tempfile = $tempdir . '/aigrade_' . uniqid() . '.pdf';
         $file->copy_content_to($tempfile);
         
         try {
@@ -272,8 +274,11 @@ class grader {
      * @return string The extracted text
      */
     private function extract_docx_text($file) {
-        // Save to temp file
-        $tempfile = tempnam(sys_get_temp_dir(), 'aigrade_docx_');
+        global $CFG;
+        
+        // Use Moodle's temp directory
+        $tempdir = make_request_directory();
+        $tempfile = $tempdir . '/aigrade_' . uniqid() . '.docx';
         $file->copy_content_to($tempfile);
         
         try {
@@ -396,7 +401,7 @@ class grader {
         if ($onlinetext && !empty($onlinetext->onlinetext)) {
             $text = strip_tags($onlinetext->onlinetext);
             
-            // Check if text contains Google Docs/Slides links
+            // Check if text contains Google Docs links
             $google_text = $this->extract_google_docs_text($text);
             if ($google_text) {
                 $text .= "\n\n" . $google_text;
@@ -416,10 +421,10 @@ class grader {
     }
     
     /**
-     * Extract text from Google Docs or Slides links in submission text
+     * Extract text from Google Docs links in submission text
      *
      * @param string $text The submission text that may contain Google links
-     * @return string Extracted text from Google Docs/Slides
+     * @return string Extracted text from Google Docs
      */
     private function extract_google_docs_text($text) {
         $extracted = '';
@@ -447,7 +452,6 @@ class grader {
     private function fetch_google_doc($doc_id) {
         $export_url = "https://docs.google.com/document/d/{$doc_id}/export?format=txt";
         
-        
         try {
             $ch = curl_init();
             curl_setopt($ch, CURLOPT_URL, $export_url);
@@ -460,24 +464,20 @@ class grader {
             $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
             curl_close($ch);
             
-            
             if ($http_code === 200 && $content) {
                 return trim($content);
             }
             
             return false;
         } catch (\Exception $e) {
-
             return false;
         }
     }
     
-    
-    
     /**
      * Extract text from file submissions
      *
-     * @param stdClass $submission The submission object
+     * @param \stdClass $submission The submission object
      * @return string Extracted text from all submitted files
      */
     private function extract_file_submission_text($submission) {
@@ -513,7 +513,7 @@ class grader {
                     break;
                 default:
                     // Unsupported file type
-                    $file_content = "[File: {$filename} - Format not supported for AI grading]";
+                    $file_content = get_string('unsupported_file_type', 'local_aigrade', $filename);
             }
             
             if ($file_content) {
@@ -534,8 +534,11 @@ class grader {
      * @return string The extracted text
      */
     private function extract_pptx_text($file) {
-        // Save to temp file
-        $tempfile = tempnam(sys_get_temp_dir(), 'aigrade_pptx_');
+        global $CFG;
+        
+        // Use Moodle's temp directory
+        $tempdir = make_request_directory();
+        $tempfile = $tempdir . '/aigrade_' . uniqid() . '.pptx';
         $file->copy_content_to($tempfile);
         
         try {
@@ -582,8 +585,11 @@ class grader {
      * @return string The extracted text
      */
     private function extract_odt_text($file) {
-        // Save to temp file
-        $tempfile = tempnam(sys_get_temp_dir(), 'aigrade_odt_');
+        global $CFG;
+        
+        // Use Moodle's temp directory
+        $tempdir = make_request_directory();
+        $tempfile = $tempdir . '/aigrade_' . uniqid() . '.odt';
         $file->copy_content_to($tempfile);
         
         try {

@@ -50,7 +50,6 @@ if (!$aiconfig || !$aiconfig->enabled) {
 
 // Handle the grading action
 if ($action === 'grade') {
-    require_once($CFG->dirroot . '/local/aigrade/classes/grader.php');
     
     $grader = new \local_aigrade\grader($assignment, $context, $aiconfig);
     $result = $grader->grade_submissions();
@@ -59,4 +58,4 @@ if ($action === 'grade') {
     die();
 }
 
-echo json_encode(['success' => false, 'error' => 'Invalid action']);
+echo json_encode(['success' => false, 'error' => get_string('error_invalid_action', 'local_aigrade')]);

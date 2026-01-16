@@ -121,7 +121,7 @@ GRADING REMINDERS:
 - Focus on content, not formatting or visual elements
 - Be supportive and warm',
         PARAM_TEXT
-    ));;
+    ));
 
     $ADMIN->add('localplugins', $settings);
 }

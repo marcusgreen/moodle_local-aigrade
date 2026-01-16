@@ -24,22 +24,34 @@
 
 namespace local_aigrade\privacy;
 
+use core_privacy\local\metadata\collection;
+use core_privacy\local\request\contextlist;
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Privacy Subsystem for local_aigrade implementing null_provider.
- *
- * This plugin does not store any personal user data.
+ * Privacy Subsystem for local_aigrade.
  */
-class provider implements \core_privacy\local\metadata\null_provider {
+class provider implements
+    \core_privacy\local\metadata\provider {
     
     /**
-     * Get the language string identifier with the component's language
-     * file to explain why this plugin stores no data.
+     * Returns meta data about this system.
      *
-     * @return string
+     * @param collection $collection The initialised collection to add items to.
+     * @return collection A listing of user data stored through this system.
      */
-    public static function get_reason(): string {
-        return 'privacy:metadata';
+    public static function get_metadata(collection $collection): collection {
+        
+        // Data sent to external AI providers
+        $collection->add_external_location_link('ai_provider', [
+            'submissiontext' => 'privacy:metadata:ai_provider:submissiontext',
+            'assignmentname' => 'privacy:metadata:ai_provider:assignmentname',
+            'assignmentinstructions' => 'privacy:metadata:ai_provider:assignmentinstructions',
+            'rubric' => 'privacy:metadata:ai_provider:rubric',
+            'gradelevel' => 'privacy:metadata:ai_provider:gradelevel',
+        ], 'privacy:metadata:ai_provider');
+
+        return $collection;
     }
 }
