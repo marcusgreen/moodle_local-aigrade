@@ -1,31 +1,31 @@
-## [1.4.2] - 2026-01-18
-### Fixed
-- Fixed Backup/Restore API implementation (Issue #11)
-  - Updated backup class to include `rubricfile` field in backup structure
-  - Fixed restore process to correctly map assignment instance IDs
-  - Changed from `process_local_aigrade_config` immediate processing to deferred processing in `after_restore_module()` hook
-  - Ensured duplicated assignments now properly restore AI Grade configuration (enabled status, grade level, instructions)
-  - Note: Rubric files are not backed up/restored - teachers must re-upload rubrics after course restore/duplication
-  
-## [1.4.1] - 2026-01-18
-### Fixed
-- Fixed hard-coded language strings in JavaScript files (Issue #9)
-  - Moved all user-facing strings in `amd/src/grade_bulk.js` to language file
-  - Moved all user-facing strings in `amd/src/grade_single.js` to language file
-  - Added new language strings: `grading_in_progress`, `success_graded_count`, `error_with_message`, `error_unknown`, `error_server_communication`, `grading_single_in_progress`
-  - All strings now properly use `Str.get_strings()` for localization support
-  - Maintained English fallback for compatibility if string loading fails
+# Changelog
+
+All notable changes to the AI Grade plugin will be documented in this file.
+
+## [1.5.0] - 2026-01-20
+
+### Added
+- **Lexile Level Integration**: Each grade level now displays corresponding Lexile reading level
+  - Grade 3 (Lexile 420L) through Grade 12 (Lexile 1385L)
+  - AI feedback is now written at the appropriate Lexile reading level for each grade
+  - Vocabulary complexity and sentence structure automatically adjusted based on Lexile level
+- **Grade-Appropriate Grading Strictness**: AI applies different grading standards based on grade level
+  - Elementary students (grades 3-5): Very generous grading, rewards effort and participation
+  - Middle school students (grades 6-8): Balanced approach, encourages development
+  - High school students (grades 9-12): Increasingly rigorous, expects college-ready work by grade 12
+  - Ensures younger students receive more encouragement while older students are held to higher standards
 
 ### Changed
-- Updated AJAX implementation to use External Services (Issue #10)
-  - Created `classes/external/grade_bulk.php` external service class
-  - Created `classes/external/grade_single.php` external service class
-  - Created `db/services.php` to register external services
-  - Updated `amd/src/grade_bulk.js` to use `Ajax.call()` with external service
-  - Updated `amd/src/grade_single.js` to use `Ajax.call()` with external service
-  - Updated `lib.php` to pass cmid and userid parameters instead of URLs
-  - Improved security and compatibility with Moodle standards
-  - Old AJAX endpoint files (`grade.php`, `grade_single.php`) maintained for backwards compatibility
+- Updated grade level dropdown label from "Student Grade Level" to "Student grade/Lexile level"
+- Enhanced AI prompting to include explicit instructions for Lexile-appropriate feedback
+- Modified grading philosophy to scale with student grade level (more generous for younger, more rigorous for older)
+- AI now receives specific guidance on vocabulary complexity and sentence structure for each grade level
+
+### Technical
+- Added Lexile mapping array in grader.php for precise reading level targeting
+- Added strictness parameter that varies by grade level in AI prompts
+- Language strings updated to show both grade and Lexile level (e.g., "Grade 7 (Lexile 970L)")
+
 ## [1.4.0] - 2026-01-16
 
 ### Fixed
@@ -35,6 +35,10 @@
   - Simplified backup/restore to handle configuration only (rubric files must be re-uploaded after restore)
   - Resolved "unknown_context_mapping" errors during course restore
 - Fixed settings.php double semicolon syntax error (line 124)
+- Fixed JavaScript button loading to appear on initial page load without requiring refresh
+  - Changed page type detection from `mod-assign-grading` to `mod-assign-grader`
+  - Modified JavaScript to load when `action=grader` is present (even before userid parameter)
+  - Implemented MutationObserver for dynamic content detection
 
 ### Changed
 - Updated Privacy API implementation from `null_provider` to full metadata provider
@@ -54,6 +58,7 @@
 - Security checks properly implemented (require_login, require_sesskey, require_capability)
 - Settings stored in config_plugins table (not config table)
 - All database operations use Moodle DML API with proper parameterization
+- AMD JavaScript modules properly handle dynamic page loading
 
 ## [1.3.0] - 2025-01-15
 

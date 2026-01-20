@@ -632,9 +632,31 @@ class grader {
      */
     private function build_prompt($instructions, $rubric_text, $submission_text, $max_grade) {
         $assignment_label = get_string('assignment_instructions_label', 'local_aigrade');
+        // REPLACE lines 635-698 in /var/www/html/local/aigrade/classes/grader.php with this:
+
         $has_rubric = (strpos($rubric_text, $assignment_label) !== 0);
         
         $grade_level = $this->aiconfig->grade_level ?? '9';
+        
+        // Map grade level to Lexile level and reading complexity
+        $lexile_map = [
+            '3' => ['lexile' => '420L', 'vocab' => 'simple, concrete words', 'sentence' => 'short sentences (8-12 words)', 'strictness' => 'very generous - reward any reasonable effort'],
+            '4' => ['lexile' => '650L', 'vocab' => 'basic vocabulary', 'sentence' => 'simple sentences (10-14 words)', 'strictness' => 'very generous - focus on effort and participation'],
+            '5' => ['lexile' => '830L', 'vocab' => 'grade-appropriate vocabulary', 'sentence' => 'clear, straightforward sentences', 'strictness' => 'generous - emphasize growth and trying'],
+            '6' => ['lexile' => '925L', 'vocab' => 'moderate vocabulary', 'sentence' => 'varied sentence structure', 'strictness' => 'encouraging - reward solid attempts'],
+            '7' => ['lexile' => '970L', 'vocab' => 'intermediate vocabulary', 'sentence' => 'moderately complex sentences', 'strictness' => 'balanced - recognize good work while noting areas for improvement'],
+            '8' => ['lexile' => '1010L', 'vocab' => 'appropriate academic vocabulary', 'sentence' => 'varied complexity', 'strictness' => 'balanced - expect competent work but allow for learning'],
+            '9' => ['lexile' => '1050L', 'vocab' => 'high school level vocabulary', 'sentence' => 'complex sentence structures', 'strictness' => 'fair - expect quality work with room for development'],
+            '10' => ['lexile' => '1080L', 'vocab' => 'advanced vocabulary', 'sentence' => 'sophisticated sentences', 'strictness' => 'appropriately rigorous - expect well-developed work'],
+            '11' => ['lexile' => '1185L', 'vocab' => 'college-prep vocabulary', 'sentence' => 'complex, nuanced sentences', 'strictness' => 'rigorous - expect college-ready work'],
+            '12' => ['lexile' => '1385L', 'vocab' => 'college-level vocabulary', 'sentence' => 'sophisticated academic prose', 'strictness' => 'appropriately strict - expect college-level quality and depth']
+        ];
+        
+        $lexile_info = $lexile_map[$grade_level] ?? $lexile_map['9'];
+        $lexile_level = $lexile_info['lexile'];
+        $vocab_level = $lexile_info['vocab'];
+        $sentence_level = $lexile_info['sentence'];
+        $strictness = $lexile_info['strictness'];
         
         // Map grade level to description
         $grade_desc = '';
@@ -648,8 +670,8 @@ class grader {
         
         if ($has_rubric) {
             // Prompt for grading WITH a rubric
-            $prompt = "You are grading a Grade {$grade_level} {$grade_desc} student's assignment in an Ohio public school.\n\n";
-            $prompt .= "GRADING PHILOSOPHY: Be encouraging and generous - focus on what they did well and give credit for reasonable efforts. Students at this grade level are still learning and developing their skills. Award points for good-faith attempts.\n\n";
+            $prompt = "You are grading a Grade {$grade_level} {$grade_desc} student's assignment (Lexile {$lexile_level}) in an Ohio public school.\n\n";
+            $prompt .= "GRADING PHILOSOPHY FOR GRADE {$grade_level}: Be {$strictness}. Students at this grade level should be held to grade-appropriate standards.\n\n";
             $prompt .= "GRADING INSTRUCTIONS:\n";
             $prompt .= $instructions . "\n\n";
             $prompt .= get_string('grading_rubric_label', 'local_aigrade') . "\n";
@@ -661,16 +683,16 @@ class grader {
             $prompt .= "[Brief feedback addressing the student directly - do not include the word FEEDBACK]\n\n";
             $prompt .= get_string('student_submission_label', 'local_aigrade') . "\n";
             $prompt .= $submission_text . "\n\n";
-            $prompt .= "IMPORTANT GRADING GUIDELINES FOR GRADE {$grade_level} STUDENTS:\n";
-            $prompt .= "- Be generous with points - reward effort and good-faith attempts\n";
-            $prompt .= "- Focus on encouragement and what they did well\n";
-            $prompt .= "- Keep criticism minimal and constructive\n";
-            $prompt .= "- Use age-appropriate language and expectations\n";
-            $prompt .= "- When in doubt, give the benefit of the doubt";
+            $prompt .= "CRITICAL FEEDBACK REQUIREMENTS FOR GRADE {$grade_level} (LEXILE {$lexile_level}):\n";
+            $prompt .= "- GRADING STRICTNESS: {$strictness}\n";
+            $prompt .= "- Write ALL feedback at exactly Lexile {$lexile_level} reading level\n";
+            $prompt .= "- Use {$vocab_level} in your feedback\n";
+            $prompt .= "- Use {$sentence_level} in your feedback\n";
+            $prompt .= "- Apply grade-appropriate expectations - Grade {$grade_level} work should meet Grade {$grade_level} standards";
         } else {
             // Prompt for grading WITHOUT a rubric (using assignment description)
-            $prompt = "You are grading a Grade {$grade_level} {$grade_desc} student's assignment in an Ohio public school.\n\n";
-            $prompt .= "GRADING PHILOSOPHY: Be encouraging and generous - award points for good-faith efforts and reasonable attempts. Focus on growth and learning at this grade level, not perfection.\n\n";
+            $prompt = "You are grading a Grade {$grade_level} {$grade_desc} student's assignment (Lexile {$lexile_level}) in an Ohio public school.\n\n";
+            $prompt .= "GRADING PHILOSOPHY FOR GRADE {$grade_level}: Be {$strictness}. Students at this grade level should be held to grade-appropriate standards.\n\n";
             $prompt .= $rubric_text . "\n\n";
             $prompt .= "GRADING GUIDANCE:\n";
             $prompt .= $instructions . "\n\n";
@@ -687,13 +709,18 @@ class grader {
             $prompt .= "   - One suggestion for improvement\n\n";
             $prompt .= get_string('student_submission_label', 'local_aigrade') . "\n";
             $prompt .= $submission_text . "\n\n";
-            $prompt .= "IMPORTANT GRADING GUIDELINES FOR GRADE {$grade_level} STUDENTS:\n";
-            $prompt .= "- Be generous with points - reward effort and good-faith attempts\n";
-            $prompt .= "- Focus on encouragement and what they did well\n";
-            $prompt .= "- Keep criticism minimal and constructive\n";
-            $prompt .= "- Use age-appropriate language and expectations\n";
-            $prompt .= "- When in doubt, give the benefit of the doubt";
+            $prompt .= "CRITICAL FEEDBACK REQUIREMENTS FOR GRADE {$grade_level} (LEXILE {$lexile_level}):\n";
+            $prompt .= "- GRADING STRICTNESS: {$strictness}\n";
+            $prompt .= "- Write ALL feedback at exactly Lexile {$lexile_level} reading level\n";
+            $prompt .= "- Use {$vocab_level} in your feedback\n";
+            $prompt .= "- Use {$sentence_level} in your feedback\n";
+            $prompt .= "- Apply grade-appropriate expectations - Grade {$grade_level} work should meet Grade {$grade_level} standards";
         }
+        
+        // TEMPORARY DEBUG - Remove after testing
+        error_log('AI Grade Debug - Grade Level: ' . $grade_level);
+        error_log('AI Grade Debug - Lexile Level: ' . $lexile_level);
+        error_log('AI Grade Debug - Strictness: ' . $strictness);
         
         return $prompt;
     }
